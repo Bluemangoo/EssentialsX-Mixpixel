@@ -24,6 +24,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Statistic;
 import org.bukkit.block.Block;
+import org.bukkit.command.defaults.PluginsCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
@@ -328,7 +329,7 @@ public class User extends UserData implements Comparable<User>, IMessageRecipien
 
             if (VersionUtil.PRE_FLATTENING) {
                 final int id = material.getId();
-                if (isAuthorized("essentials.itemspawn.item-" + id)) return true;
+                return isAuthorized("essentials.itemspawn.item-" + id);
             }
 
             return false;
@@ -799,9 +800,7 @@ public class User extends UserData implements Comparable<User>, IMessageRecipien
     public void updateActivityOnChat(final boolean broadcast) {
         if (ess.getSettings().cancelAfkOnChat()) {
             //Chat happens async, make sure we have a sync context
-            ess.scheduleSyncDelayedTask(() -> {
-                updateActivity(broadcast, AfkStatusChangeEvent.Cause.CHAT);
-            });
+            ess.scheduleSyncDelayedTask(() -> updateActivity(broadcast, AfkStatusChangeEvent.Cause.CHAT));
         }
     }
 
@@ -818,7 +817,7 @@ public class User extends UserData implements Comparable<User>, IMessageRecipien
                 && !isAuthorized("essentials.afk.kickexempt")) {
             final String kickReason = tl("autoAfkKickReason", autoafkkick / 60.0);
             lastActivity = 0;
-            new Command().execute((CommandSender) this.getBase(),"stp",["tp","lobby"])
+            this.getBase().performCommand("stp tp lobby");
             //this.getBase().kickPlayer(kickReason);
 
             for (final User user : ess.getOnlineUsers()) {
